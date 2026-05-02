@@ -1,65 +1,30 @@
 {
-  "Random Forest": {
-    "name": "Random Forest",
-    "target": "RiskCategory",
-    "kind": "classifier",
-    "train_score": 0.9361,
-    "test_score": 0.9263,
-    "cv_mean": 0.917,
-    "cv_std": 0.0019,
-    "gap": 0.0098,
-    "status": "Good Fit",
-    "extra": {
-      "confusion_matrix": [
-        [
-          17,
-          0,
-          45
-        ],
-        [
-          0,
-          205,
-          133
-        ],
-        [
-          3,
-          40,
-          2557
-        ]
-      ],
-      "labels": [
-        "High",
-        "Low",
-        "Moderate"
-      ]
-    }
-  },
   "XGBoost": {
     "name": "XGBoost",
     "target": "RiskCategory",
     "kind": "classifier",
-    "train_score": 0.9908,
-    "test_score": 0.925,
-    "cv_mean": 0.9195,
-    "cv_std": 0.0036,
-    "gap": 0.0658,
+    "train_score": 0.9492,
+    "test_score": 0.928,
+    "cv_mean": 0.9207,
+    "cv_std": 0.0004,
+    "gap": 0.0212,
     "status": "Good Fit",
     "extra": {
       "confusion_matrix": [
         [
-          42,
+          39,
           0,
-          20
+          23
         ],
         [
           0,
-          226,
-          112
+          235,
+          103
         ],
         [
-          16,
-          77,
-          2507
+          17,
+          73,
+          2510
         ]
       ],
       "labels": [
@@ -73,14 +38,14 @@
     "name": "Gradient Boosting",
     "target": "StressScore",
     "kind": "regressor",
-    "train_score": 0.7805,
-    "test_score": 0.7459,
-    "cv_mean": 0.751,
-    "cv_std": 0.0044,
-    "gap": 0.0346,
+    "train_score": 0.7646,
+    "test_score": 0.7473,
+    "cv_mean": 0.7523,
+    "cv_std": 0.0041,
+    "gap": 0.0173,
     "status": "Good Fit",
     "extra": {
-      "mae": 3.182
+      "mae": 3.18
     }
   },
   "Logistic Regression": {
@@ -107,104 +72,6 @@
       "labels": [
         0,
         1
-      ]
-    }
-  },
-  "Ridge Regression": {
-    "name": "Ridge Regression",
-    "target": "StressScore",
-    "kind": "regressor",
-    "train_score": 0.7434,
-    "test_score": 0.7403,
-    "cv_mean": 0.7428,
-    "cv_std": 0.0052,
-    "gap": 0.0031,
-    "status": "Good Fit",
-    "extra": {
-      "mae": 3.241
-    }
-  },
-  "Lasso Regression": {
-    "name": "Lasso Regression",
-    "target": "StressScore",
-    "kind": "regressor",
-    "train_score": 0.7427,
-    "test_score": 0.7387,
-    "cv_mean": 0.7422,
-    "cv_std": 0.0051,
-    "gap": 0.0041,
-    "status": "Good Fit",
-    "extra": {
-      "mae": 3.259
-    }
-  },
-  "KNN": {
-    "name": "KNN",
-    "target": "RiskCategory",
-    "kind": "classifier",
-    "train_score": 0.9184,
-    "test_score": 0.912,
-    "cv_mean": 0.9062,
-    "cv_std": 0.0052,
-    "gap": 0.0064,
-    "status": "Good Fit",
-    "extra": {
-      "confusion_matrix": [
-        [
-          12,
-          0,
-          50
-        ],
-        [
-          0,
-          166,
-          172
-        ],
-        [
-          1,
-          41,
-          2558
-        ]
-      ],
-      "labels": [
-        "High",
-        "Low",
-        "Moderate"
-      ]
-    }
-  },
-  "Decision Tree": {
-    "name": "Decision Tree",
-    "target": "RiskCategory",
-    "kind": "classifier",
-    "train_score": 0.9236,
-    "test_score": 0.9167,
-    "cv_mean": 0.91,
-    "cv_std": 0.001,
-    "gap": 0.0069,
-    "status": "Good Fit",
-    "extra": {
-      "confusion_matrix": [
-        [
-          17,
-          0,
-          45
-        ],
-        [
-          0,
-          197,
-          141
-        ],
-        [
-          10,
-          54,
-          2536
-        ]
-      ],
-      "labels": [
-        "High",
-        "Low",
-        "Moderate"
       ]
     }
   }

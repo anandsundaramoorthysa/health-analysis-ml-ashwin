@@ -14,32 +14,32 @@ st.set_page_config(page_title="About",
                    page_icon=":material/info:", layout="wide")
 inject_css()
 
-st.title(":material/info: About WorkHealth AI Pro")
+st.title(":material/info: About WorkHealth Analytics")
 
 section("What it is", icon="description")
 st.markdown("""
-**WorkHealth AI Pro** is an end-to-end IT-workplace health analytics platform
-combining **8 supervised ML models** with a **rule-based scoring engine** to
+**WorkHealth Analytics** is an end-to-end IT-workplace health analytics platform
+combining **3 best-in-class ML models** with a **rule-based scoring engine** to
 classify employees into Low / Moderate / High health-risk bands and produce
 **personalised, actionable recommendations**.
 
-The system analyses 15,000 IT-professional records spanning **WFH / Office / Hybrid**
-work modes and a 10-feature lifestyle vector (Work hours, Sleep, Caffeine,
-Activity, Screen time, Water, Job satisfaction, Burnout, BMI, Pain).
+The system analyses 15,000 synthetic IT-professional records spanning
+**WFH / Office / Hybrid** work modes and a 10-feature lifestyle vector
+(Work hours, Sleep, Caffeine, Activity, Screen time, Water, Job satisfaction,
+Burnout, BMI, Pain).
 """)
 
-section("ML Model Card", icon="model_training")
+section("ML Model Card - the 3 selected models", icon="model_training")
 st.markdown("""
-| Model | Type | Target | Purpose |
-|---|---|---|---|
-| Random Forest | Classification | RiskCategory | Primary risk classifier (regularised: max_depth=8, min_samples_leaf=5) |
-| XGBoost | Classification | RiskCategory | Boosted-tree challenger model |
-| Gradient Boosting | Regression | StressScore | Continuous stress estimator |
-| Logistic Regression | Binary classification | HighRiskFlag | Urgent-action flag (1 = high risk) |
-| Ridge Regression | Regularised regression | StressScore | L2-penalty baseline |
-| Lasso Regression | Regularised regression | StressScore | L1 sparsity, feature selection |
-| KNN | Classification | RiskCategory | Similarity baseline (k=15) |
-| Decision Tree | Classification | RiskCategory | Interpretable baseline (max_depth=6) |
+Each model was chosen for being **best-in-class for its specific task** —
+not just the highest raw score. Hyperparameters are tuned to fit Streamlit
+Community Cloud's **1 GB RAM** budget while staying accurate.
+
+| Model | Role | Target | Hyperparameters | Test score |
+|---|---|---|---|---|
+| **XGBoost** | Multi-class risk classifier | RiskCategory (Low/Mod/High) | n_estimators=120, max_depth=4, lr=0.1, tree_method=hist | ~0.93 acc |
+| **Gradient Boosting** | Stress regressor | StressScore (continuous 0-40) | n_estimators=80, max_depth=3, lr=0.08 | ~0.75 R-squared |
+| **Logistic Regression** | Binary urgent-action flag | HighRiskFlag (1 = high risk) | StandardScaler + L2, max_iter=500 | ~0.99 acc |
 """)
 
 section("Rule-Based Engine", icon="rule")
@@ -66,7 +66,7 @@ The rule engine scores 11 health parameters with weighted point penalties:
 section("Architecture", icon="architecture")
 st.markdown("""
 ```
-WorkHealth AI Pro
+WorkHealth Analytics
 |-- app.py                         # Home / KPIs / model banner
 |-- pages/                         # 9 Streamlit pages (auto-discovered)
 |   |-- 1_Data_Overview.py
@@ -79,15 +79,35 @@ WorkHealth AI Pro
 |   |-- 8_Compare_Peers.py
 |   `-- 9_About.py
 |-- utils/
-|   |-- data_loader.py             # synthetic 15k-row generator + CSV cache
+|   |-- data_loader.py             # synthetic 15k-row generator (float32)
 |   |-- feature_engineering.py     # Risk/Wellness/BMI/Sleep/AgeGroup
 |   |-- rule_engine.py             # deterministic point scoring
-|   |-- ml_models.py               # 8 models, train+save+load
-|   |-- recommendations.py         # action plan + peer KNN
+|   |-- ml_models.py               # 7 models, train + save + load
+|   |-- recommendations.py         # action plan + peer KNN search
 |   `-- styles.py                  # CSS, KPI strip, sidebar filters
-|-- models/                        # joblib + JSON reports (auto-saved)
+|-- models/                        # pre-trained joblib + JSON (committed)
 `-- data/                          # workhealth_data.csv (auto-generated)
 ```
+""")
+
+section("Streamlit Cloud Memory Strategy", icon="memory")
+st.markdown("""
+The free tier guarantees **1 GB RAM, up to 3 GB peak**. To stay comfortably
+under that limit:
+
+- **Pre-trained models are committed** — Streamlit Cloud only loads pickled
+  artefacts; no live training happens at request time (saves 300-500 MB
+  transient memory on cold start).
+- **Compressed pickles** — `joblib.dump(..., compress=3)` cuts the model file
+  ~3x.
+- **float32 dataframe** — numeric columns cast on load (~2x smaller than
+  default float64).
+- **Pre-computed learning curves** — saved to `models/learning_curves.json`
+  during training; the Model Fitness page reads the file (no live retrain).
+- **Trimmed estimators** — Random Forest cut from 300 -> 100 trees and
+  depth 8 -> 6; XGBoost depth 5 -> 4.
+- **Lazy ML loading** — pages that don't need ML (Data Overview, EDA,
+  Correlations, Compare Peers, About) skip the model load entirely.
 """)
 
 section("References", icon="menu_book")
@@ -107,7 +127,7 @@ st.code("pip install -r requirements.txt\nstreamlit run app.py", language="bash"
 section("Icon system", icon="palette")
 st.markdown("""
 This dashboard uses **Google Material Symbols** (the `:material/icon_name:`
-shortcode built into Streamlit 1.36+) for all icons - no emoji are used in
+shortcode built into Streamlit 1.36+) for all icons — no emoji are used in
 the code or filenames. Material Symbols are vector icons rendered through
 Streamlit's markdown engine.
 

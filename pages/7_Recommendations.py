@@ -135,7 +135,7 @@ st.caption("Peers are the 50 dataset employees most similar to your inputs "
 
 # ---------- Download report ----------
 section("Download Report", icon="download")
-report_md = f"""# WorkHealth AI Pro - Personalised Health Report
+report_md = f"""# WorkHealth Analytics - Personalised Health Report
 
 **Risk category:** {rec['category']}  |  **Total points:** {rec['total_points']}
 **ML predicted stress:** {ml_result.get('StressPrediction', '-')}/40

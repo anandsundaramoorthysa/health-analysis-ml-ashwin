@@ -79,14 +79,15 @@ with hcol1:
         f"<div class='kpi-sub'>Rule engine total: {rule_result['total']} pts</div>"
         f"</div>", unsafe_allow_html=True)
 with hcol2:
-    st.metric("ML Risk (RF)", ml_result.get("RiskCategory", "-"),
-              delta=f"P={max(ml_result.get('RiskProba', {0:0}).values()):.2f}")
+    proba_dict = ml_result.get("RiskProba") or {"-": 0}
+    st.metric("ML Risk (XGBoost)", ml_result.get("RiskCategory", "-"),
+              delta=f"P={max(proba_dict.values()):.2f}")
 with hcol3:
-    st.metric("Predicted Stress",
+    st.metric("Predicted Stress (GBM)",
               f"{ml_result.get('StressPrediction', '-')} / 40")
 with hcol4:
     hr = ml_result.get("HighRiskProb", 0.0)
-    st.metric("High-Risk probability", f"{hr*100:.1f}%",
+    st.metric("High-Risk probability (LR)", f"{hr*100:.1f}%",
               delta="urgent" if hr > 0.5 else "ok",
               delta_color="inverse" if hr > 0.5 else "normal")
 

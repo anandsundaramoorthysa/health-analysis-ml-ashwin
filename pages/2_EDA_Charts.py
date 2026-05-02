@@ -71,7 +71,7 @@ with b4:
     size_axis = st.selectbox(
         "Size", ["BurnoutLevel", "BMI", "RiskScore"], key="s")
 fig = px.scatter(
-    filt.sample(min(2500, len(filt)), random_state=1),
+    filt.sample(min(800, len(filt)), random_state=1),
     x=x_axis, y=y_axis, color=color_axis, size=size_axis,
     opacity=0.7, hover_data=["EmployeeID", "Department"])
 fig.update_layout(height=500)
@@ -111,7 +111,7 @@ st.plotly_chart(fig, use_container_width=True)
 
 # ---------- 5. Parallel coordinates ----------
 section("5) Parallel Coordinates - multivariate fingerprints", icon="ssid_chart")
-sample = filt.sample(min(800, len(filt)), random_state=2).copy()
+sample = filt.sample(min(400, len(filt)), random_state=2).copy()
 sample["RiskN"] = sample["RiskCategory"].map({"Low": 0, "Moderate": 1, "High": 2})
 fig = go.Figure(data=go.Parcoords(
     line=dict(color=sample["RiskN"],

@@ -1,4 +1,4 @@
-"""ML Insights - feature importances, predictions, model comparison."""
+"""ML Insights - 3-model summary, feature importances, predictions, ROC."""
 from __future__ import annotations
 
 import sys
@@ -11,7 +11,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import auc, roc_curve
 
 from utils.data_loader import load_data
 from utils.ml_models import FEATURES, load_or_train
@@ -22,7 +22,8 @@ st.set_page_config(page_title="ML Insights",
 inject_css()
 
 st.title(":material/model_training: ML Insights")
-st.caption("8 models | feature importance | actual vs predicted | ROC / confusion matrix.")
+st.caption("3 best-in-class models | feature importance | confusion matrix | "
+           "predicted vs actual | ROC curve.")
 
 df = load_data()
 filt = sidebar_filters(df)
@@ -32,6 +33,16 @@ artefacts = load_or_train(df)
 models = artefacts["models"]
 reports = artefacts["reports"]
 imps = artefacts["importances"]
+
+# ---------- Model line-up ----------
+section("The 3 Models in Use", icon="hub")
+st.markdown("""
+| Role | Model | Target | Why this one |
+|---|---|---|---|
+| Multi-class risk classifier | **XGBoost** | RiskCategory (Low/Mod/High) | Highest test accuracy across all candidates |
+| Stress regressor            | **Gradient Boosting** | StressScore (0-40) | Best R-squared on the regression task |
+| Urgent-action binary flag   | **Logistic Regression** | HighRiskFlag | Saturated accuracy, smallest memory footprint |
+""")
 
 # ---------- Reports table ----------
 section("Model Performance Summary", icon="leaderboard")
@@ -45,6 +56,7 @@ for name, rep in reports.items():
     })
 rep_df = pd.DataFrame(report_rows)
 
+
 def _color(v):
     if v == "Good Fit":
         return "color: #22c55e"
@@ -52,14 +64,15 @@ def _color(v):
         return "color: #ef4444"
     return "color: #f59e0b"
 
+
 try:
     styled = rep_df.style.map(_color, subset=["Status"])
 except AttributeError:
     styled = rep_df.style.applymap(_color, subset=["Status"])
 st.dataframe(styled, use_container_width=True, hide_index=True)
 
-# ---------- Feature Importance ----------
-section("Feature Importance - Random Forest", icon="bar_chart")
+# ---------- Feature Importance (XGBoost) ----------
+section("Feature Importance - XGBoost", icon="bar_chart")
 imp_df = (pd.DataFrame({"Feature": list(imps.keys()),
                          "Importance": list(imps.values())})
           .sort_values("Importance", ascending=True))
@@ -67,8 +80,10 @@ fig = px.bar(imp_df, x="Importance", y="Feature", orientation="h",
              color="Importance", color_continuous_scale="Tealrose")
 fig.update_layout(height=480)
 st.plotly_chart(fig, use_container_width=True)
+st.caption("Higher = the feature contributes more to the XGBoost decision "
+           "trees when classifying risk category.")
 
-# ---------- Confusion Matrix ----------
+# ---------- Confusion matrices for both classifiers ----------
 section("Confusion Matrix", icon="grid_view")
 clf_models = [n for n, r in reports.items()
               if r.kind == "classifier" and r.status != "unavailable"]
@@ -85,11 +100,12 @@ if rep.extra and "confusion_matrix" in rep.extra:
     st.caption(f"{chosen} | Test accuracy = {rep.test_score:.3f} | "
                f"CV = {rep.cv_mean:.3f} +/- {rep.cv_std:.3f}")
 
-# ---------- Predicted vs Actual (regression) ----------
-section("Stress Score - Predicted vs Actual (Gradient Boosting)", icon="timeline")
+# ---------- Predicted vs Actual (Gradient Boosting) ----------
+section("Stress Score - Predicted vs Actual (Gradient Boosting)",
+        icon="timeline")
 gb = models.get("Gradient Boosting")
 if gb is not None:
-    sample = filt.sample(min(1500, len(filt)), random_state=3)
+    sample = filt.sample(min(600, len(filt)), random_state=3)
     preds = gb.predict(sample[FEATURES])
     plot_df = pd.DataFrame({"Actual": sample["StressScore"].values,
                              "Predicted": preds,
@@ -105,12 +121,15 @@ if gb is not None:
     fig.update_layout(height=480, xaxis_title="Actual stress",
                       yaxis_title="Predicted stress")
     st.plotly_chart(fig, use_container_width=True)
+    st.caption("Closer to the dashed cyan line = better prediction. "
+               "MAE: " + str(reports['Gradient Boosting'].extra.get('mae', '-')))
 
 # ---------- ROC for Logistic Regression ----------
-section("ROC Curve - Logistic Regression (HighRisk vs Not)", icon="show_chart")
+section("ROC Curve - Logistic Regression (HighRisk vs Not)",
+        icon="show_chart")
 lr = models.get("Logistic Regression")
 if lr is not None:
-    sample = filt.sample(min(2500, len(filt)), random_state=4)
+    sample = filt.sample(min(1000, len(filt)), random_state=4)
     proba = lr.predict_proba(sample[FEATURES])[:, 1]
     fpr, tpr, _ = roc_curve(sample["HighRiskFlag"], proba)
     auc_val = auc(fpr, tpr)
@@ -124,19 +143,5 @@ if lr is not None:
     fig.update_layout(height=440, xaxis_title="False Positive Rate",
                       yaxis_title="True Positive Rate")
     st.plotly_chart(fig, use_container_width=True)
-
-# ---------- Coefficient comparison ----------
-section("Ridge vs Lasso - Coefficient Comparison (Stress regression)",
-        icon="compare_arrows")
-ridge = models.get("Ridge Regression")
-lasso = models.get("Lasso Regression")
-if ridge is not None and lasso is not None:
-    ridge_coef = ridge.named_steps["reg"].coef_
-    lasso_coef = lasso.named_steps["reg"].coef_
-    coef_df = pd.DataFrame({
-        "Feature": FEATURES, "Ridge": ridge_coef, "Lasso": lasso_coef
-    }).melt(id_vars="Feature", var_name="Model", value_name="Coefficient")
-    fig = px.bar(coef_df, x="Coefficient", y="Feature", color="Model",
-                 orientation="h", barmode="group")
-    fig.update_layout(height=520)
-    st.plotly_chart(fig, use_container_width=True)
+    st.caption("AUC close to 1.0 = the model perfectly separates "
+               "high-risk from non-high-risk employees.")

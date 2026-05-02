@@ -141,9 +141,23 @@ def generate_dataset(n: int = 15_000, seed: int = 42) -> pd.DataFrame:
     return df
 
 
+def _shrink_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+    """Cast numeric columns to the smallest-precision dtype to save memory."""
+    for c in df.select_dtypes(include="float").columns:
+        df[c] = df[c].astype("float32")
+    for c in df.select_dtypes(include="integer").columns:
+        # Stay in int32 — avoids overflow on engineered scores
+        df[c] = df[c].astype("int32")
+    return df
+
+
 @st.cache_data(show_spinner=False)
 def load_data(force_regen: bool = False) -> pd.DataFrame:
-    """Load the dataset, generating and caching it on first call."""
+    """Load the dataset, generating and caching it on first call.
+
+    Numeric columns are stored as float32/int32 to keep RAM small enough
+    for Streamlit Community Cloud's 1 GB budget.
+    """
     DATA_DIR.mkdir(exist_ok=True)
     if force_regen or not DATA_FILE.exists():
         df = generate_dataset()
@@ -151,7 +165,8 @@ def load_data(force_regen: bool = False) -> pd.DataFrame:
     else:
         df = pd.read_csv(DATA_FILE)
     from utils.feature_engineering import enrich
-    return enrich(df)
+    df = enrich(df)
+    return _shrink_dtypes(df)
 
 
 def get_data_path() -> str:

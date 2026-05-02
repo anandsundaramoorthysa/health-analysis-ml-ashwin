@@ -1,4 +1,4 @@
-"""WorkHealth AI Pro - Home / Landing page.
+"""WorkHealth Analytics - Home / Landing page.
 
 Run with:  streamlit run app.py
 """
@@ -18,7 +18,7 @@ from utils.ml_models import load_or_train
 from utils.styles import inject_css, kpi_row, sidebar_filters, section
 
 st.set_page_config(
-    page_title="WorkHealth AI Pro",
+    page_title="WorkHealth Analytics",
     page_icon=":material/health_and_safety:",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -26,7 +26,7 @@ st.set_page_config(
 inject_css()
 
 # ---------- Header ----------
-st.title(":material/health_and_safety: WorkHealth AI Pro")
+st.title(":material/health_and_safety: WorkHealth Analytics")
 st.markdown(
     "**IT Workplace Health Monitoring | ML Risk Prediction | "
     "Rule-Based Wellness | Personalised Recommendations**"
@@ -91,15 +91,15 @@ st.dataframe(
     use_container_width=True, hide_index=True,
 )
 
-# ---------- ML model banners ----------
-section("Trained ML Models", icon="model_training")
+# ---------- ML model banners (3 best models) ----------
+section("3 Best-in-Class ML Models", icon="model_training")
 reports = artefacts["reports"]
-cols = st.columns(4)
+cols = st.columns(3)
 for i, (name, rep) in enumerate(reports.items()):
-    with cols[i % 4]:
+    with cols[i % 3]:
         score_label = "R-squared" if rep.kind == "regressor" else "Accuracy"
         st.metric(
-            label=name,
+            label=f"{name}  ->  {rep.target}",
             value=f"{rep.test_score:.3f} {score_label}",
             delta=rep.status,
             delta_color="normal" if rep.status == "Good Fit" else "inverse",

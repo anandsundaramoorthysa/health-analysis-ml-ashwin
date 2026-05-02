@@ -71,7 +71,7 @@ with c2:
 with c3:
     color = st.selectbox("Color", ["RiskCategory", "WorkMode", "Gender",
                                     "AgeGroup", "BMICategory"])
-scatter_sample = filt.sample(min(2500, len(filt)), random_state=1)
+scatter_sample = filt.sample(min(800, len(filt)), random_state=1)
 try:
     fig = px.scatter(
         scatter_sample, x=xa, y=ya, color=color, opacity=0.7, trendline="ols",
